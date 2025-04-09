@@ -105,3 +105,37 @@ race_graph <- ggplot(rank_data, aes(rank, coup_risk, fill = country)) +
 
 gganimate::animate(race_graph, fps = 3, duration = 15, width = 800, height = 600, renderer = gifski_renderer())
 
+# ------------------- Tree map ------------------- #
+
+# 1. Manage data. 
+
+# Read in libraries. 
+library(treemap)
+
+# 2. Sum up coups by region. 
+regions <- base_data2 %>%
+  mutate(region = case_when(Sub_africa == 1 ~ "Sub-Saharan Africa",
+                            MENA == 1 ~ "Middle East/North Africa",
+                            euro_cent_asia == 1 ~ "Europe/Central Asia", 
+                            S_asia == 1 ~ "South Asia",
+                            e_asia_pacific == 1 ~ "East Asian Pacific",
+                            N_america == 1 ~ "North America",
+                            LA_carrib == 1 ~ "Latin America/Caribbean",
+                            TRUE ~ "Other")) %>%
+  select(country, ccode, year, month, coup_attempt, coup_successful, coup_failed, region) %>% 
+  group_by(region) %>%
+  dplyr::summarize(coups = sum(coup_attempt, na.rm = TRUE)) 
+
+# 3. Create treemap. 
+library(extrafont)
+font_import()
+loadfonts(device="win") # On windows. 
+
+png("coups_by_region.png", width = 1600, height = 1200, res = 300)  # Larger image size and higher resolution
+treemap(regions,
+        index = "region", vSize = "coups", type = "index",
+        title = "Coup Attempts by Region", fontfamily.title = "Calibri", fontsize.title = 18, 
+        fontcolor.labels = "ghostwhite", fontsize.label = 10, fontfamily.labels = "Calibri",
+        border.col = c("black", "black"), border.lwds = c(2, 2)) 
+dev.off()
+
