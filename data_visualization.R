@@ -15,7 +15,59 @@ library(gganimate)
 library(gifski_renderer)
 
 # Bring in data. 
-source("reading_data.R")
+#2.a.domestic political
+url <- "https://raw.githubusercontent.com/thynec/CoupCats/data/2.a.base_data.csv.gz"
+base_data.2a <- fread(url)
+rm(url)
+#2.b.domestic economic
+url <- "https://raw.githubusercontent.com/thynec/CoupCats/data/2.b.base_data.csv.gz"
+base_data.2b <- fread(url)
+rm(url)
+#2.c.political instability
+url <- "https://raw.githubusercontent.com/thynec/CoupCats/data/2.c.base_data.csv.gz"
+base_data.2c <- fread(url)
+rm(url)
+#2.d.military variables
+url <- "https://raw.githubusercontent.com/thynec/CoupCats/data/2.d.base_data.csv.gz"
+base_data.2d <- fread(url)
+rm(url)
+#2.e.international variables
+url <- "https://raw.githubusercontent.com/thynec/CoupCats/data/2.e.base_data.csv.gz"
+base_data.2e <- fread(url)
+rm(url)
+
+base_data <- base_data.2a
+rm(base_data.2a)
+base_data.2b <- base_data.2b %>%
+  dplyr::select(-country, -coup_attempt, -coup_successful, -coup_failed, -pce, -pce2, -pce3)
+base_data <- base_data %>%
+  left_join(base_data.2b, by=c("ccode", "year", "month"))
+rm(base_data.2b)
+base_data.2c <- base_data.2c %>%
+  dplyr::select(-country, -coup_attempt, -coup_successful, -coup_failed, -pce, -pce2, -pce3)
+base_data <- base_data %>%
+  left_join(base_data.2c, by=c("ccode", "year", "month"))
+rm(base_data.2c)    
+base_data.2d <- base_data.2d %>%
+  dplyr::select(-country, -coup_attempt, -coup_successful, -coup_failed, -pce, -pce2, -pce3)
+base_data <- base_data %>%
+  left_join(base_data.2d, by=c("ccode", "year", "month"))
+rm(base_data.2d)    
+base_data.2e <- base_data.2e %>%
+  dplyr::select(-country, -coup_attempt, -coup_successful, -coup_failed, -pce, -pce2, -pce3)
+base_data <- base_data %>%
+  left_join(base_data.2e, by=c("ccode", "year", "month"))
+rm(base_data.2e)
+
+# Filtering out rows with NAs. 
+columns <- c("pres_elec_lag", "polyarchy", "polyarchy2", 
+             "lgdppcl", "ch_gdppcl", 
+             "cw", 
+             "cold", "e_asia_pacific", "LA_carrib", "MENA", "N_america", "S_asia", "Sub_africa", 
+             "pce", "pce2", "pce3")
+
+base_data2 <- base_data[complete.cases(base_data[, ..columns]), ] 
+rm(columns)
 
 # 2. Calculate coup risk. 
 # Running logistic regression. 
